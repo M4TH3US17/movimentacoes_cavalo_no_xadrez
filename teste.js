@@ -6,15 +6,15 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-/*
-  (x1, y1) - Posição atual
-  (x2, y2) - Posição que preciso verificar
-*/
+function perguntar(pergunta) {
+    return new Promise((resolve) => {
+        rl.question(pergunta, (resposta) => {
+            resolve(resposta);
+        });
+    });
+}
 
 function possivel(x1, y1, x2, y2) {
-    // const posicao_atual = ;
-    // const proxima_posicao = ;
-
     tabuleiro([x1, y1], [x2, y2]);
 };
 
@@ -31,61 +31,58 @@ function pmov(x, y) {
 };
 
 function tabuleiro(posicao_atual, proxima_posicao) {
-    console.log("\n-------------- POSIÇÃO DO CAVALO NO TABULEIRO (EXERCICIO) --------------\n")
-
-    console.log(`> Posição Atual: (${posicao_atual[0]}, ${posicao_atual[1]})`)
-    console.log(`> Próxima Posição: (${proxima_posicao[0]}, ${proxima_posicao[1]})\n`)
+    console.log("\n-------------- POSIÇÃO DO CAVALO NO TABULEIRO --------------\n");
+    console.log(`> Posição Atual: (${posicao_atual[0]}, ${posicao_atual[1]})`);
+    console.log(`> Próxima Posição: (${proxima_posicao[0]}, ${proxima_posicao[1]})\n`);
 
     for (let linha = 0; linha < 8; linha++) {
-        let rows = ""
-
-        if ((linha % 8 !== 0) || (linha % 8 === 0))
-            rows += ` y${linha + 1} `
+        let rows = `y${linha + 1} `; // Adiciona rótulo Y
 
         for (let coluna = 0; coluna < 8; coluna++) {
-            let x2 = `x${Number(posicao_atual[1])}`; 
-            let x1 = `x${linha + 1}`;
-            
-            let y1 = `y${coluna + 1}`;
-            let y2 = `y${Number(posicao_atual[0])}`;
+            rows += exibir_possibilidade(posicao_atual, coluna, linha);
+        }
 
-            ehParaExibirCavalo = ((x2 === x1) && (y2 === y1))
+        console.log(rows);
+    }
 
-            // console.log(`ENTRADA: (${x2}, ${y2}), FOR: (${x1}, ${y1}), BOOLEAN: ${ehParaExibirCavalo}`)
-
-            rows += `${ehParaExibirCavalo ? "♞  " : "-- "}`
-        };
-
-        console.log(rows)
-
-        let ehUltimaLinha = ((linha + 1) === 8)
-        if (ehUltimaLinha)
-            console.log("    x1 x2 x3 x4 x5 x6 x7 x8\n")
-    };
-
-};
-
-let continuar_jogando = 0;
-let jogadaAtual = 0;
-
-function perguntar(pergunta) {
-    return new Promise((resolve) => {
-        rl.question(pergunta, (resposta) => {
-            resolve(resposta);
-        });
-    });
+    console.log("   x1 x2 x3 x4 x5 x6 x7 x8\n");
 }
 
+function exibir_possibilidade(posicao_atual, coluna, linha) {
+    const xCavalo = Number(posicao_atual[1]) - 1; // Convertendo para índice 0-7
+    const yCavalo = Number(posicao_atual[0]) - 1;
+
+    const xAtual = linha; // Já está em 0-7 (do loop)
+    const yAtual = coluna;
+
+    // Verifica se é a posição atual do cavalo
+    if (xCavalo === xAtual && yCavalo === yAtual) {
+        return "♞  ";
+    }
+
+    // Calcula a diferença absoluta
+    const diffX = Math.abs(xAtual - xCavalo);
+    const diffY = Math.abs(yAtual - yCavalo);
+
+    // Verifica movimento em L (2-1 ou 1-2)
+    const ehMovimentoValido = (diffX === 2 && diffY === 1) || (diffX === 1 && diffY === 2);
+
+    return ehMovimentoValido ? "⏹︎  " : "-- "; // ◉ para movimentos válidos
+};
+
 async function jogo() {
+    let continuar_jogando = 0;
+    let jogadaAtual = 0;
+
     while (continuar_jogando === 0) {
-        if (jogadaAtual === 0) 
-            pmov(1, 1);
+        if (jogadaAtual === 0)
+            pmov(2, 1);
 
         jogadaAtual += 1;
 
         const resposta = await perguntar('Deseja continuar jogando? (0 = Sim, 1 = Não): ');
         continuar_jogando = parseInt(resposta);
-        
+
         if (continuar_jogando === 0) {
             const eixoX = await perguntar('Eixo X: ');
             const eixoY = await perguntar('Eixo Y: ');
